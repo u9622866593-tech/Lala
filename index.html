@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lana's World - Dressing Room + Salon</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;touch-action:none}
+body{background:#111;font-family:Arial;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+#top{color:white;text-align:center;padding:8px;font-weight:bold;font-size:15px}
+#top span{color:#ff9ecb}
+#quest{background:#ff5da2;color:white;text-align:center;padding:6px;font-size:12px;font-weight:bold}
+#tabs{display:flex;gap:8px;padding:8px 10px}
+.tab{flex:1;padding:10px;border-radius:15px;border:none;font-weight:bold;background:#333;color:white}
+.tab.active{background:#ff5da2;color:white}
+#room{position:relative;flex:1;margin:0 10px 10px;border-radius:20px;overflow:hidden;background:linear-gradient(#fff5f8,#ffe9f2);border:4px solid white}
+#floor{position:absolute;bottom:0;left:0;right:0;height:55%;background:repeating-linear-gradient(90deg,#5a3d2b 0 60px,#6b4a33 60px 120px);border-top:6px solid #fff}
+
+/* DRESSING ROOM */
+#dressing{position:absolute;inset:0;display:block}
+.shelf{position:absolute;left:3%;top:3%;width:32%;background:white;border-radius:12px;padding:8px;font-size:11px;border:2px solid #ffd0e0}
+.shelf b{color:#ff5da2}
+.shoeShelf{position:absolute;right:3%;top:3%;width:30%;background:white;border-radius:12px;padding:8px;border:2px solid #ffd0e0;font-size:20px;text-align:center}
+.mirror{position:absolute;left:38%;top:2%;width:22%;height:38%;background:linear-gradient(#cceeff,#fff);border:4px solid gold;border-radius:50px;text-align:center;padding-top:10px;font-size:22px}
+.catwalk{position:absolute;left:50%;top:58%;transform:translateX(-50%);width:260px;height:22px;background:#e11d48;border-radius:10px;color:white;text-align:center;font-size:11px;padding-top:4px}
+.wardrobe{position:absolute;bottom:2%;left:3%;right:3%;background:white;border-radius:15px;padding:8px;z-index:20;display:flex;gap:6px;overflow-x:auto}
+.outfitBtn{flex-shrink:0;border:2px solid #eee;background:#fff5f8;border-radius:12px;padding:8px 10px;text-align:center;font-size:11px;cursor:pointer}
+.outfitBtn.active{border-color:#ff5da2;background:#ffe0ee}
+.outfitBtn span{font-size:24px;display:block}
+
+/* SALON */
+#salon{position:absolute;inset:0;display:none}
+.board{position:absolute;left:5%;top:4%;width:55%;height:45%;background:#8a6a5a;border:4px solid white;border-radius:10px;padding:8px;color:white;font-size:11px}
+.desk{position:absolute;right:4%;top:38%;width:42%;height:24%;background:white;border-radius:12px;border:3px solid #ffd0e0;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#ff5da2}
+.desk small{position:absolute;bottom:6px;left:8px;background:#fff;border:1px solid #ccc;padding:2px 6px;font-size:11px;color:#333}
+.rug{position:absolute;left:45%;top:68%;transform:translateX(-50%);width:190px;height:70px;background:#ff9ecb;border-radius:50%;opacity:.7}
+
+.char{position:absolute;width:100px;height:190px;background-size:contain;background-repeat:no-repeat;background-position:bottom;filter:drop-shadow(0 8px 8px rgba(0,0,0,.3));z-index:10}
+#player{background-image:url('player.png');left:38%;top:38%;transition:filter .3s}
+#npc{background-image:url('npc.png');left:68%;top:22%;width:90px;height:180px;z-index:6}
+#player.walking{animation:walk .3s infinite alternate}
+@keyframes walk{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+#bubble{position:absolute;background:white;padding:8px 12px;border-radius:15px;font-size:13px;font-weight:bold;display:none;z-index:30;max-width:190px;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+#talkBtn{display:none;position:absolute;left:50%;bottom:22%;transform:translateX(-50%);background:#ff5da2;color:white;border:none;padding:12px 18px;border-radius:20px;font-weight:bold;z-index:40}
+#outfitLabel{position:absolute;top:5px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:4px 10px;border-radius:20px;font-size:11px;z-index:25;white-space:nowrap}
+#controls{display:flex;justify-content:space-between;align-items:center;padding:10px;gap:10px}
+#joystick{width:120px;height:120px;background:rgba(255,255,255,.2);border:2px solid white;border-radius:50%;position:relative;flex-shrink:0}
+#stick{width:52px;height:52px;background:#ff5da2;border-radius:50%;position:absolute;left:34px;top:34px}
+.btn{background:#ff5da2;color:white;border:none;padding:12px 14px;border-radius:18px;font-weight:bold}
+</style>
+</head>
+<body>
+<div id="top">LANA'S WORLD 💖 <span>• Dressing Room → Salon</span></div>
+<div id="quest">👗 Quest: Zieh dir ein neues Outfit an und zeig es Lana!</div>
+<div id="tabs">
+  <button class="tab active" id="tabDress" onclick="showRoom('dressing')">👗 Dressing Room</button>
+  <button class="tab" id="tabSalon" onclick="showRoom('salon')">💅 Lana's Salon →</button>
+</div>
+
+<div id="room">
+  <div id="outfitLabel">Outfit: Rosa Pulli + Shorts</div>
+  <div id="bubble"></div>
+
+  <!-- DRESSING ROOM -->
+  <div id="dressing">
+    <div class="shelf"><b>👗 KLEIDER</b><br>👗👚👕👖<br>Rosa • Weiß • Schwarz</div>
+    <div class="shoeShelf">👟 SCHUHE<br>👠👢👟<br>Heels • Boots • Sneaker</div>
+    <div class="mirror">🪞<br>Spiegel</div>
+    <div class="catwalk">✨ CATWALK ✨</div>
+    <div class="wardrobe" id="wardrobe"></div>
+  </div>
+
+  <!-- SALON -->
+  <div id="salon">
+    <div class="board">📌 Pinnwand<br>💖 Fotos • Salon Vibes</div>
+    <div class="desk">Lana's Desk<small>Lana</small></div>
+    <div class="rug"></div>
+    <div id="npc" class="char"></div>
+    <button id="talkBtn" onclick="talkToLana()">💬 Mit Lana reden</button>
+  </div>
+
+  <div id="floor"></div>
+  <div id="player" class="char"></div>
+</div>
+
+<div id="controls">
+  <div id="joystick"><div id="stick"></div></div>
+  <div style="display:flex;gap:6px">
+    <button class="btn" onclick="playerAction('wave')">👋</button>
+    <button class="btn" onclick="playerAction('dance')">💃</button>
+    <button class="btn" onclick="talkToLana()">💬</button>
+  </div>
+</div>
+
+<script>
+let x=38, y=38, currentRoom='dressing';
+let player=document.getElementById('player');
+let bubble=document.getElementById('bubble');
+let talkBtn=document.getElementById('talkBtn');
+let quest=document.getElementById('quest');
+let label=document.getElementById('outfitLabel');
+let joy=document.getElementById('joystick');
+let stick=document.getElementById('stick');
+let dragging=false, lanaStep=0, questDone=false;
+let currentOutfit='rosa';
+
+let outfits=[
+  {id:'rosa', name:'Rosa Pulli + Shorts', emoji:'🌸', filter:'none', desc:'Dein Original-Look!'},
+  {id:'white', name:'White Look wie Lana', emoji:'🤍', filter:'brightness(1.15) saturate(0.2)', desc:'Weißer Rollkragen + weißer Rock + Heels'},
+  {id:'black', name:'Black Diva Dress', emoji:'🖤', filter:'brightness(0.55) contrast(1.2)', desc:'Schwarzes Kleid + Boots'},
+  {id:'pinkdress', name:'Pink Princess', emoji:'💖', filter:'hue-rotate(300deg) saturate(1.5)', desc:'Pinkes Kleid + Heels'},
+  {id:'gold', name:'Golden Catwalk', emoji:'✨', filter:'sepia(0.6) brightness(1.1)', desc:'Gold Look für den Catwalk'},
+];
+
+let ward=document.getElementById('wardrobe');
+outfits.forEach(o=>{
+  let b=document.createElement('div');
+  b.className='outfitBtn'+(o.id==='rosa'?' active':'');
+  b.innerHTML=`<span>${o.emoji}</span>${o.name}`;
+  b.onclick=()=>setOutfit(o.id, b);
+  ward.appendChild(b);
+});
+
+function setOutfit(id, btn){
+  let o=outfits.find(x=>x.id===id);
+  currentOutfit=id;
+  player.style.filter=`drop-shadow(0 8px 8px rgba(0,0,0,.3)) ${o.filter}`;
+  label.innerText='Outfit: '+o.name;
+  document.querySelectorAll('.outfitBtn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  showBubble('Neues Outfit: '+o.name+' '+o.emoji+' '+o.desc, 'player');
+  if(currentRoom==='dressing'){
+    player.style.transition='transform .5s';
+    player.style.transform='rotate(360deg)';
+    setTimeout(()=>player.style.transform='rotate(0deg)',600);
+  }
+}
+
+function showRoom(room){
+  currentRoom=room;
+  document.getElementById('dressing').style.display = room==='dressing'?'block':'none';
+  document.getElementById('salon').style.display = room==='salon'?'block':'none';
+  document.getElementById('tabDress').classList.toggle('active', room==='dressing');
+  document.getElementById('tabSalon').classList.toggle('active', room==='salon');
+  // Spieler Position anpassen
+  if(room==='salon'){ x=30; y=55; }
+  else { x=38; y=38; }
+  update();
+  showBubble(room==='dressing' ? '👗 Dressing Room - wähl ein Outfit unten!' : '💅 Willkommen im Salon! Geh zu Lana!', 'player');
+}
+
+function update(){
+  player.style.left=x+'%'; player.style.top=y+'%';
+  if(currentRoom==='salon'){
+    let dist=Math.abs(x-62)+Math.abs(y-35);
+    talkBtn.style.display = dist<30 ? 'block':'none';
+  } else talkBtn.style.display='none';
+}
+update();
+
+function move(dx,dy){
+  x=Math.max(2,Math.min(78,x+dx));
+  y=Math.max(5,Math.min(65,y+dy));
+  player.classList.add('walking');
+  update();
+  setTimeout(()=>player.classList.remove('walking'),150);
+}
+joy.addEventListener('touchstart',()=>dragging=true);
+joy.addEventListener('touchmove',e=>{
+  if(!dragging) return;
+  let t=e.touches[0]; let r=joy.getBoundingClientRect();
+  let dx=t.clientX-(r.left+r.width/2), dy=t.clientY-(r.top+r.height/2);
+  dx=Math.max(-34,Math.min(34,dx)); dy=Math.max(-34,Math.min(34,dy));
+  stick.style.left=(34+dx)+'px'; stick.style.top=(34+dy)+'px';
+  move(dx*0.09, dy*0.09);
+  if(dx<-5) player.style.transform='scaleX(-1)';
+  if(dx>5) player.style.transform='scaleX(1)';
+});
+joy.addEventListener('touchend',()=>{dragging=false;stick.style.left='34px';stick.style.top='34px'});
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a') move(-2,0);
+  if(e.key==='ArrowRight'||e.key==='d') move(2,0);
+  if(e.key==='ArrowUp'||e.key==='w') move(0,-2);
+  if(e.key==='ArrowDown'||e.key==='s') move(0,2);
+});
+
+function showBubble(text, who='player'){
+  bubble.innerText=text; bubble.style.display='block';
+  if(who==='lana'){ bubble.style.left='55%'; bubble.style.top='15%'; }
+  else { bubble.style.left=(x+5)+'%'; bubble.style.top=(y-5)+'%'; }
+  setTimeout(()=>bubble.style.display='none',2800);
+}
+function talkToLana(){
+  if(currentRoom!=='salon'){ showRoom('salon'); return; }
+  let o=outfits.find(x=>x.id===currentOutfit);
+  let lines=[
+    `Ohh! Dein ${o.name} sieht so gut aus! ${o.emoji}`,
+    "Willkommen im Salon! Was darf ich heute machen?",
+    "Dein Outfit passt perfekt zu meinem Salon!",
+    "Lass uns ein Foto auf dem Catwalk machen!",
+    "Komm morgen wieder, ich hab neue Styles!"
+  ];
+  showBubble(lines[lanaStep % lines.length], 'lana');
+  lanaStep++;
+  if(!questDone){
+    questDone=true;
+    quest.innerText="✅ Quest geschafft! Du hast Lana dein neues Outfit gezeigt!";
+    quest.style.background="#22c55e";
+  }
+}
+function playerAction(type){
+  if(type==='wave') showBubble("Heyy! 👋", 'player');
+  if(type==='dance'){
+    showBubble("💃 Catwalk!", 'player');
+    player.style.transition='transform .5s'; player.style.transform='rotate(360deg)';
+    setTimeout(()=>player.style.transform='rotate(0deg)',600);
+  }
+}
+player.addEventListener('click',()=>showBubble("Ich geh mich umziehen!", 'player'));
+document.getElementById('npc').addEventListener('click',()=>talkToLana());
+</script>
+</body>
+</html>
